@@ -1814,6 +1814,18 @@ class TaskInstance(Base, LoggingMixin):
                     self.log.info('Marking task as FAILED.')
                 if task.email_on_failure and task.email:
                     self.email_alert(error)
+
+                # SLACK FAILURE FEATURE GOES HERE
+                if (task.slack_alert_on_failure
+                    and task.slack_alert_channel
+                    and task.slack_auth_username
+                    and task.slack_auth_password
+                    and task.slack_auth_token
+                    and task.slack_task_id
+                    and task.slack_text):
+                        self.log.info("Sending alert to Slack")
+                        self.slack_alert(error)
+
         except Exception as e2:
             self.log.error('Failed to send email to: %s', task.email)
             self.log.exception(e2)
@@ -2018,6 +2030,9 @@ class TaskInstance(Base, LoggingMixin):
         subject = render('subject_template', default_subject)
         html_content = render('html_content_template', default_html_content)
         send_email(self.task.email, subject, html_content)
+
+    def slack_alert(self, exception):
+        self.log.info("slack has been alerted")
 
     def set_duration(self):
         if self.end_date and self.start_date:
@@ -2491,6 +2506,13 @@ class BaseOperator(LoggingMixin):
             email=None,
             email_on_retry=True,
             email_on_failure=True,
+            slack_alert_on_failure=False,
+            slack_alert_channel=None,
+            slack_auth_username=None,
+            slack_auth_password=None,
+            slack_auth_token=None,
+            slack_task_id=None,
+            slack_text=None,
             retries=0,
             retry_delay=timedelta(seconds=300),
             retry_exponential_backoff=False,
