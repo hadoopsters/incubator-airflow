@@ -1824,7 +1824,7 @@ class TaskInstance(Base, LoggingMixin):
                     and task.slack_task_id
                     and task.slack_text):
                         self.log.info("Sending alert to Slack")
-                        self.slack_alert(error)
+
 
         except Exception as e2:
             self.log.error('Failed to send email to: %s', task.email)
